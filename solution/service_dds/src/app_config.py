@@ -1,11 +1,12 @@
 import os
 
-from lib.kafka_connect import KafkaConsumer, KafkaProducer
-from lib.pg import PgConnect
+from lib.kafka_connect.kafka_connectors import KafkaConsumer, KafkaProducer
+from lib.pg.pg_connect import PgConnect
 
 
 class AppConfig:
     CERTIFICATE_PATH = '/crt/YandexInternalRootCA.crt'
+    DEFAULT_JOB_INTERVAL = 25
 
     def __init__(self) -> None:
 

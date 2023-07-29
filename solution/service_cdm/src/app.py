@@ -3,14 +3,15 @@ import logging
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
 
-from app_config import AppConfig
 from cdm_loader.cdm_message_processor_job import CdmMessageProcessor
+from cdm_loader.repository.cdm_repository import CdmRepository
+
+from app_config import AppConfig
 
 
 app = Flask(__name__)
 
 config = AppConfig()
-
 
 @app.get('/health')
 def hello_world():
@@ -20,9 +21,10 @@ def hello_world():
 if __name__ == '__main__':
     app.logger.setLevel(logging.DEBUG)
 
-    proc = CdmMessageProcessor(
-        app.logger
-    )
+    proc = CdmMessageProcessor(consumer=config.kafka_consumer(),
+                               cdm_repository=CdmRepository(config.pg_warehouse_db()),
+                               batch_size=100,
+                               logger=app.logger)
 
     scheduler = BackgroundScheduler()
     scheduler.add_job(func=proc.run, trigger="interval", seconds=25)
