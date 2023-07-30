@@ -4,6 +4,7 @@ from logging import Logger
 
 from lib.kafka_connect import KafkaConsumer
 from lib.kafka_connect import KafkaProducer
+from dds_loader.repository.dds_builder import DdsBuilder
 from dds_loader.repository.dds_repository import DdsRepository
 
 
@@ -31,35 +32,23 @@ class DdsMessageProcessor:
             if not message_consume:
                 break
             
-            load_dt = datetime.utcnow()
-            load_src = 'orders-system-kafka'
             payload = message_consume['payload']
+            builder = DdsBuilder(payload)
 
-            self._dds_repository.h_category_insert(payload['products'], load_dt, load_src)
-            self._dds_repository.h_order_insert(payload['id'], payload['date'], load_dt, load_src)
-            self._dds_repository.h_product_insert(payload['products'], load_dt, load_src)
-            self._dds_repository.h_restaurant_insert(payload['restaurant']['id'], load_dt, load_src)
-            self._dds_repository.h_user_insert(payload['user']['id'], load_dt, load_src)
-            self._dds_repository.l_order_product_insert(payload['id'], payload['products'], 
-                                                         load_dt, load_src)
-            
-            self._dds_repository.l_order_user_insert(payload['id'], payload['user']['id'],
-                                                     load_dt, load_src)
-            
-            self._dds_repository.l_product_category_insert(payload['products'], load_dt, load_src)
-            
-            self._dds_repository.l_product_restaurant_insert(payload['products'], payload['restaurant']['id'],
-                                                             load_dt, load_src)
-            
-            self._dds_repository.s_order_cost_insert(payload['id'], payload['cost'], 
-                                                     payload['payment'], load_dt, load_src)
-            
-            self._dds_repository.s_order_status_insert(payload['id'], payload['status'],
-                                                       load_dt, load_src)
-            
-            self._dds_repository.s_product_names_insert(payload['products'], load_dt, load_src)
-            self._dds_repository.s_restaurant_names_insert(payload['restaurant'], load_dt, load_src)
-            self._dds_repository.s_user_names_insert(payload['user'], load_dt, load_src)
+            self._dds_repository.h_category_insert(builder.h_category())
+            self._dds_repository.h_order_insert(builder.h_order())
+            self._dds_repository.h_product_insert(builder.h_product())
+            self._dds_repository.h_restaurant_insert(builder.h_restaurant())
+            self._dds_repository.h_user_insert(builder.h_user())
+            self._dds_repository.l_order_product_insert(builder.l_order_product())
+            self._dds_repository.l_order_user_insert(builder.l_order_user())
+            self._dds_repository.l_product_category_insert(builder.l_product_category())
+            self._dds_repository.l_product_restaurant_insert(builder.l_product_restaurant())
+            self._dds_repository.s_order_cost_insert(builder.s_order_cost())
+            self._dds_repository.s_order_status_insert(builder.s_order_status())
+            self._dds_repository.s_product_names_insert(builder.s_product_names())
+            self._dds_repository.s_restaurant_names_insert(builder.s_restaurant_names())
+            self._dds_repository.s_user_names_insert(builder.s_user_names())
             
             message_produce = {
                     'user_category_counters': self.collect_user_category_counters(),

@@ -1,16 +1,15 @@
-import uuid
-
-from typing import Any, Dict, List
+from typing import List
 
 from lib.pg.pg_connect import PgConnect
-from pydantic import BaseModel
+from cdm_loader.repository.cdm_objects import user_category_counters, user_product_counters
 
 
 class CdmRepository:
     def __init__(self, db: PgConnect) -> None:
         self._db = db
 
-    def user_category_counters_insert(self, user_category_counters: List) -> None:
+    def user_category_counters_insert(self,
+                                      user_category_counters: List[user_category_counters]) -> None:
 
         with self._db.connection() as conn:
             with conn.cursor() as cur:
@@ -27,14 +26,15 @@ class CdmRepository:
                             order_cnt = EXCLUDED.order_cnt;
                         """,
                         {
-                            'user_id': uuid.UUID(user_category_counter['user_id']),
-                            'category_id': uuid.UUID(user_category_counter['category_id']),
-                            'category_name': user_category_counter['category_name'],
-                            'order_cnt': user_category_counter['order_cnt']
+                            'user_id': user_category_counter.user_id,
+                            'category_id': user_category_counter.category_id,
+                            'category_name': user_category_counter.category_name,
+                            'order_cnt': user_category_counter.order_cnt
                         }
                     )
 
-    def user_product_counters_insert(self, user_product_counters: List) -> None:
+    def user_product_counters_insert(self,
+                                     user_product_counters: List[user_product_counters]) -> None:
 
         with self._db.connection() as conn:
             with conn.cursor() as cur:
@@ -50,9 +50,9 @@ class CdmRepository:
                             order_cnt = EXCLUDED.order_cnt;
                         """,
                         {
-                            'user_id': uuid.UUID(user_product_counter['user_id']),
-                            'product_id': uuid.UUID(user_product_counter['product_id']),
-                            'product_name': user_product_counter['product_name'],
-                            'order_cnt': user_product_counter['order_cnt']
+                            'user_id': user_product_counter.user_id,
+                            'product_id': user_product_counter.product_id,
+                            'product_name': user_product_counter.product_name,
+                            'order_cnt': user_product_counter.order_cnt
                         }
                     )
